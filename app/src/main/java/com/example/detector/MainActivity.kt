@@ -207,7 +207,7 @@ class MainActivity : ComponentActivity() {
             val prov = fut.get()
             val pv = Preview.Builder().build().also { it.setSurfaceProvider(preview.surfaceProvider) }
             val ia = ImageAnalysis.Builder()
-                .setTargetResolution(Size(480, 640))
+                .setTargetResolution(if (resources.configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE) Size(640, 480) else Size(480, 640))
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                 .build()
@@ -233,7 +233,7 @@ class MainActivity : ComponentActivity() {
         var ts = SystemClock.uptimeMillis()
         if (ts <= lastTs) ts = lastTs + 1
         lastTs = ts
-        det.detectAsync(BitmapImageBuilder(bmp).build(), ts)
+        try { det.detectAsync(BitmapImageBuilder(bmp).build(), ts) } catch (e: Exception) {}
     }
 
     private fun onResult(res: ObjectDetectorResult) {
@@ -249,7 +249,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        detector?.close()
+        val d = detector; detector = null; d?.close()
         exec.shutdown()
     }
 }
